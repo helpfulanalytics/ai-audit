@@ -1,24 +1,25 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useDarkMode } from "../../hooks/useDarkMode";
 
-/* ── Design tokens ── */
+/* ── Design tokens (CSS custom properties — swapped by dark mode) ── */
 const T = {
-  ink:       "#061b31",
-  slate:     "#50617a",
-  ghost:     "#64748d",
-  white:     "#ffffff",
-  porcelain: "#f8fafd",
-  powder:    "#e5edf5",
-  stone:     "#d8d6df",
-  violet:    "#533afd",
-  washed:    "#b9b9f9",
-  soft:      "#8087ff",
-  green:     "#81b81a",
-  orange:    "#ff6118",
-  greenBg:   "#f0f9e0",
-  orangeBg:  "#fff2eb",
-  violetBg:  "#ede9ff",
+  ink:       "var(--c-ink)",
+  slate:     "var(--c-slate)",
+  ghost:     "var(--c-ghost)",
+  white:     "var(--c-white)",
+  porcelain: "var(--c-porcelain)",
+  powder:    "var(--c-powder)",
+  stone:     "var(--c-stone)",
+  violet:    "var(--c-violet)",
+  washed:    "var(--c-washed)",
+  soft:      "var(--c-soft)",
+  green:     "var(--c-green)",
+  orange:    "var(--c-orange)",
+  greenBg:   "var(--c-green-bg)",
+  orangeBg:  "var(--c-orange-bg)",
+  violetBg:  "var(--c-violet-bg)",
 };
 
 /* ── Types ── */
@@ -246,9 +247,9 @@ function Td({ children, right, mono }: { children: React.ReactNode; right?: bool
   );
 }
 
-function Card({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
+function Card({ children, style, onMouseEnter, onMouseLeave, onClick }: { children: React.ReactNode; style?: React.CSSProperties; onMouseEnter?: React.MouseEventHandler<HTMLDivElement>; onMouseLeave?: React.MouseEventHandler<HTMLDivElement>; onClick?: React.MouseEventHandler<HTMLDivElement> }) {
   return (
-    <div style={{
+    <div onClick={onClick} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} style={{
       background: T.white, borderRadius: "8px",
       border: `1px solid ${T.powder}`,
       boxShadow: "rgba(23, 23, 23, 0.04) 0px 2px 8px 0px",
@@ -530,6 +531,184 @@ function NewOrderModal({ onClose }: { onClose: () => void }) {
   );
 }
 
+/* ── CSV export ── */
+function exportCSV(orders: typeof ORDERS) {
+  const headers = ["Order ID", "Company", "Contact", "Email", "Status", "Date", "Amount"];
+  const rows = orders.map(o => [o.id, o.company, o.contact, o.email, o.status, o.date, `$${o.amount}`]);
+  const csv = [headers, ...rows].map(r => r.map(v => `"${v}"`).join(",")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = "orders.csv"; a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* ── Order detail drawer ── */
+type OrderRow = typeof ORDERS[number];
+
+function OrderDrawer({ order, onClose }: { order: OrderRow | null; onClose: () => void }) {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (order) { setTimeout(() => setVisible(true), 10); }
+    else { setVisible(false); }
+  }, [order]);
+
+  useEffect(() => {
+    if (order) document.body.style.overflow = "hidden";
+    else document.body.style.overflow = "";
+    return () => { document.body.style.overflow = ""; };
+  }, [order]);
+
+  if (!order) return null;
+
+  const statusMap = STATUS_MAP[order.status];
+  const assessment = ASSESSMENTS.find(a => a.id === order.id);
+  const report = REPORTS.find(r => r.id === order.id);
+
+  const timeline: { label: string; date: string; done: boolean }[] = [
+    { label: "Order received",      date: order.date,          done: true },
+    { label: "Intake form sent",    date: order.date,          done: order.status !== "pending" },
+    { label: "Assessment started",  date: assessment?.date ?? "—", done: !!assessment },
+    { label: "Findings call",       date: assessment?.date ?? "—", done: order.status === "completed" },
+    { label: "Report delivered",    date: report?.generated ?? "—", done: !!report },
+  ];
+
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 500, display: "flex", justifyContent: "flex-end" }}>
+      {/* Backdrop */}
+      <div
+        onClick={onClose}
+        style={{
+          position: "absolute", inset: 0,
+          background: "rgba(6,27,49,0.4)", backdropFilter: "blur(3px)",
+          opacity: visible ? 1 : 0, transition: "opacity 280ms ease",
+        }}
+      />
+
+      {/* Drawer panel */}
+      <div style={{
+        position: "relative", width: "100%", maxWidth: "480px", height: "100%",
+        background: T.white, zIndex: 1,
+        boxShadow: "-8px 0 40px rgba(0,0,0,0.12)",
+        display: "flex", flexDirection: "column",
+        transform: visible ? "translateX(0)" : "translateX(100%)",
+        transition: "transform 320ms cubic-bezier(0.23,1,0.32,1)",
+        overflowY: "auto",
+      }}>
+        {/* Header */}
+        <div style={{ padding: "20px 24px", borderBottom: `1px solid ${T.powder}`, display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexShrink: 0 }}>
+          <div>
+            <div style={{ fontSize: "11px", color: T.ghost, fontWeight: 600, letterSpacing: "0.5px", marginBottom: "4px" }}>ORDER #{order.id}</div>
+            <h2 style={{ fontSize: "18px", fontWeight: 500, color: T.ink, margin: 0, letterSpacing: "-0.01em" }}>{order.company}</h2>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <StatusBadge status={order.status} />
+            <button onClick={onClose} style={{ width: "30px", height: "30px", borderRadius: "50%", border: `1px solid ${T.powder}`, background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: T.ghost, fontSize: "16px", transition: "background 150ms ease" }}
+              onMouseEnter={e => e.currentTarget.style.background = T.porcelain as string}
+              onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+            >×</button>
+          </div>
+        </div>
+
+        <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: "20px" }}>
+          {/* Client info */}
+          <Card style={{ padding: "16px" }}>
+            <div style={{ fontSize: "11px", fontWeight: 600, color: T.ghost, letterSpacing: "0.5px", textTransform: "uppercase", marginBottom: "12px" }}>Client</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              {[
+                { label: "Contact", value: order.contact },
+                { label: "Email",   value: order.email },
+                { label: "Date",    value: order.date },
+                { label: "Amount",  value: `$${order.amount}` },
+              ].map(row => (
+                <div key={row.label} style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span style={{ fontSize: "13px", color: T.ghost }}>{row.label}</span>
+                  <span style={{ fontSize: "13px", color: T.ink, fontWeight: 500 }}>{row.value}</span>
+                </div>
+              ))}
+            </div>
+          </Card>
+
+          {/* Timeline */}
+          <div>
+            <div style={{ fontSize: "11px", fontWeight: 600, color: T.ghost, letterSpacing: "0.5px", textTransform: "uppercase", marginBottom: "14px" }}>Progress</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0" }}>
+              {timeline.map((step, i) => (
+                <div key={step.label} style={{ display: "flex", gap: "12px" }}>
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                    <div style={{
+                      width: "22px", height: "22px", borderRadius: "50%", flexShrink: 0,
+                      background: step.done ? T.violet : T.porcelain,
+                      border: `2px solid ${step.done ? T.violet : T.stone}`,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      transition: "all 200ms ease",
+                    }}>
+                      {step.done && <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                    </div>
+                    {i < timeline.length - 1 && (
+                      <div style={{ width: "2px", flex: 1, minHeight: "20px", background: step.done ? T.violet : T.powder, margin: "2px 0", opacity: 0.4 }} />
+                    )}
+                  </div>
+                  <div style={{ paddingBottom: i < timeline.length - 1 ? "16px" : "0" }}>
+                    <div style={{ fontSize: "13px", fontWeight: step.done ? 500 : 400, color: step.done ? T.ink : T.ghost }}>{step.label}</div>
+                    <div style={{ fontSize: "11px", color: T.ghost, marginTop: "1px" }}>{step.date}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Assessment result if available */}
+          {assessment && (
+            <Card style={{ padding: "16px", background: T.porcelain }}>
+              <div style={{ fontSize: "11px", fontWeight: 600, color: T.ghost, letterSpacing: "0.5px", textTransform: "uppercase", marginBottom: "12px" }}>Assessment</div>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: "16px" }}>
+                <div>
+                  <div style={{ fontSize: "11px", color: T.ghost, marginBottom: "2px" }}>Duration</div>
+                  <div style={{ fontSize: "15px", fontWeight: 500, color: T.ink }}>{assessment.duration}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: "11px", color: T.ghost, marginBottom: "2px" }}>Savings found</div>
+                  <div style={{ fontSize: "15px", fontWeight: 600, color: T.green }}>{assessment.savings}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: "11px", color: T.ghost, marginBottom: "2px" }}>Findings</div>
+                  <div style={{ fontSize: "15px", fontWeight: 500, color: T.ink }}>{report?.findings ?? "—"}</div>
+                </div>
+              </div>
+            </Card>
+          )}
+
+          {/* Actions */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <div style={{ fontSize: "11px", fontWeight: 600, color: T.ghost, letterSpacing: "0.5px", textTransform: "uppercase", marginBottom: "4px" }}>Actions</div>
+            {order.status === "completed" && report && (
+              <button style={{ width: "100%", padding: "10px", background: T.violet, color: "#fff", border: "none", borderRadius: "6px", fontSize: "13px", fontWeight: 500, cursor: "pointer", transition: "background 150ms ease" }}
+                onMouseEnter={e => e.currentTarget.style.background = T.soft as string}
+                onMouseLeave={e => e.currentTarget.style.background = T.violet as string}
+              >Download report PDF</button>
+            )}
+            {(order.status === "processing" || order.status === "paid") && (
+              <button style={{ width: "100%", padding: "10px", background: T.violet, color: "#fff", border: "none", borderRadius: "6px", fontSize: "13px", fontWeight: 500, cursor: "pointer" }}>
+                Schedule findings call
+              </button>
+            )}
+            {order.status === "pending" && (
+              <button style={{ width: "100%", padding: "10px", background: "transparent", color: T.violet, border: `1.5px solid ${T.washed}`, borderRadius: "6px", fontSize: "13px", cursor: "pointer" }}>
+                Send payment reminder
+              </button>
+            )}
+            <button style={{ width: "100%", padding: "10px", background: "transparent", color: T.slate, border: `1.5px solid ${T.stone}`, borderRadius: "6px", fontSize: "13px", cursor: "pointer" }}>
+              Send message to client
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ══════════════════════════════════════════════
    MAIN
 ══════════════════════════════════════════════ */
@@ -539,6 +718,8 @@ export default function AdminDashboard() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [contentKey, setContentKey] = useState(0);
+  const [selectedOrder, setSelectedOrder] = useState<typeof ORDERS[number] | null>(null);
+  const { dark, toggle: toggleDark } = useDarkMode();
   const { toasts, push, dismiss } = useToasts();
   const eventIdx = useRef(0);
 
@@ -760,6 +941,21 @@ export default function AdminDashboard() {
                 }} />
               </button>
 
+              {/* Dark toggle */}
+              <button
+                onClick={toggleDark}
+                title={dark ? "Light mode" : "Dark mode"}
+                style={{ width: "34px", height: "34px", borderRadius: "7px", border: `1.5px solid ${T.powder}`, background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: T.ghost, transition: "background 150ms ease" }}
+                onMouseEnter={e => e.currentTarget.style.background = T.porcelain as string}
+                onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+              >
+                {dark ? (
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="2.5" stroke="currentColor" strokeWidth="1.4"/><path d="M7 1v1.5M7 11.5V13M1 7h1.5M11.5 7H13M2.93 2.93l1.06 1.06M10.01 10.01l1.06 1.06M2.93 11.07l1.06-1.06M10.01 3.99l1.06-1.06" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
+                ) : (
+                  <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M11.5 8.5A5.5 5.5 0 014.5 1.5a5.5 5.5 0 100 10 5.5 5.5 0 007-3z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/></svg>
+                )}
+              </button>
+
               <a href="/" style={{
                 display: "flex", alignItems: "center", gap: "5px",
                 fontSize: "12px", color: T.ghost, textDecoration: "none",
@@ -767,8 +963,8 @@ export default function AdminDashboard() {
                 border: `1.5px solid ${T.powder}`,
                 transition: "all 150ms ease",
               }}
-                onMouseEnter={e => { e.currentTarget.style.color = T.violet; e.currentTarget.style.borderColor = T.washed; e.currentTarget.style.background = T.violetBg; }}
-                onMouseLeave={e => { e.currentTarget.style.color = T.ghost; e.currentTarget.style.borderColor = T.powder; e.currentTarget.style.background = "transparent"; }}
+                onMouseEnter={e => { e.currentTarget.style.color = T.violet as string; e.currentTarget.style.borderColor = T.washed as string; e.currentTarget.style.background = T.violetBg as string; }}
+                onMouseLeave={e => { e.currentTarget.style.color = T.ghost as string; e.currentTarget.style.borderColor = T.powder as string; e.currentTarget.style.background = "transparent"; }}
               >
                 <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
                   <path d="M7 1H2v8h7V4.5L7 1z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
@@ -939,6 +1135,22 @@ export default function AdminDashboard() {
                   title="All orders"
                   sub={`${filteredOrders.length} of ${ORDERS.length} orders`}
                   action={
+                    <div style={{ display: "flex", gap: "8px" }}>
+                    <button
+                      onClick={() => exportCSV(filteredOrders)}
+                      style={{
+                        display: "flex", alignItems: "center", gap: "6px",
+                        background: "transparent", color: T.slate,
+                        border: `1.5px solid ${T.stone}`, borderRadius: "6px",
+                        padding: "9px 14px", fontSize: "13px",
+                        cursor: "pointer", transition: "all 150ms ease",
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = T.washed as string; e.currentTarget.style.color = T.violet as string; }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = T.stone as string; e.currentTarget.style.color = T.slate as string; }}
+                    >
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v7M3 5l3 3 3-3M1 10h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      Export CSV
+                    </button>
                     <button
                       onClick={() => setModalOpen(true)}
                       style={{
@@ -948,14 +1160,15 @@ export default function AdminDashboard() {
                         padding: "9px 16px", fontSize: "13px", fontWeight: 500,
                         cursor: "pointer", transition: "background 150ms ease, transform 150ms ease",
                       }}
-                      onMouseEnter={e => e.currentTarget.style.background = T.soft}
-                      onMouseLeave={e => e.currentTarget.style.background = T.violet}
+                      onMouseEnter={e => e.currentTarget.style.background = T.soft as string}
+                      onMouseLeave={e => e.currentTarget.style.background = T.violet as string}
                       onMouseDown={e => e.currentTarget.style.transform = "scale(0.97)"}
                       onMouseUp={e => e.currentTarget.style.transform = "scale(1)"}
                     >
                       <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="white" strokeWidth="1.8" strokeLinecap="round" /></svg>
                       New order
                     </button>
+                    </div>
                   }
                 />
 
@@ -977,11 +1190,13 @@ export default function AdminDashboard() {
                         {filteredOrders.map((o, i) => (
                           <tr
                             key={o.id}
+                            onClick={() => setSelectedOrder(o)}
                             style={{
                               transition: "background 120ms ease",
                               animation: `fadeUp 0.3s cubic-bezier(0.23, 1, 0.32, 1) ${i * 40}ms both`,
+                              cursor: "pointer",
                             }}
-                            onMouseEnter={e => e.currentTarget.style.background = T.porcelain}
+                            onMouseEnter={e => e.currentTarget.style.background = T.porcelain as string}
                             onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                           >
                             <Td mono><span style={{ color: T.ghost }}>#{o.id}</span></Td>
@@ -996,11 +1211,10 @@ export default function AdminDashboard() {
                             <Td><span style={{ color: T.ghost }}>{o.date}</span></Td>
                             <Td right><span style={{ fontWeight: 500, fontVariantNumeric: "tabular-nums" }}>${o.amount}</span></Td>
                             <Td>
-                              <div style={{ display: "flex", gap: "6px", flexWrap: "nowrap" }}>
-                                <ActionBtn label="View" />
-                                {o.status === "completed" && <ActionBtn label="Report" />}
+                              <div style={{ display: "flex", gap: "6px", flexWrap: "nowrap" }} onClick={e => e.stopPropagation()}>
+                                <ActionBtn label="Open" onClick={() => setSelectedOrder(o)} />
                                 {(o.status === "processing" || o.status === "paid") && <ActionBtn label="Schedule call" primary />}
-                                {o.status === "pending" && <ActionBtn label="Send reminder" />}
+                                {o.status === "pending" && <ActionBtn label="Remind" />}
                               </div>
                             </Td>
                           </tr>
@@ -1234,6 +1448,9 @@ export default function AdminDashboard() {
 
       {/* ── New Order Modal ── */}
       {modalOpen && <NewOrderModal onClose={() => setModalOpen(false)} />}
+
+      {/* ── Order detail drawer ── */}
+      <OrderDrawer order={selectedOrder} onClose={() => setSelectedOrder(null)} />
 
       {/* ── Toast stack ── */}
       <ToastStack toasts={toasts} dismiss={dismiss} />

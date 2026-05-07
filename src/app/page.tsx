@@ -2,20 +2,23 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 
-/* ── Design tokens ── */
+/* ── Design tokens (CSS custom properties — swapped by dark mode) ── */
 const T = {
-  ink:       "#061b31",
-  slate:     "#50617a",
-  ghost:     "#64748d",
-  white:     "#ffffff",
-  porcelain: "#f8fafd",
-  powder:    "#e5edf5",
-  stone:     "#d8d6df",
-  violet:    "#533afd",
-  washed:    "#b9b9f9",
-  soft:      "#8087ff",
-  orange:    "#ff6118",
-  green:     "#81b81a",
+  ink:       "var(--c-ink)",
+  slate:     "var(--c-slate)",
+  ghost:     "var(--c-ghost)",
+  white:     "var(--c-white)",
+  porcelain: "var(--c-porcelain)",
+  powder:    "var(--c-powder)",
+  stone:     "var(--c-stone)",
+  violet:    "var(--c-violet)",
+  washed:    "var(--c-washed)",
+  soft:      "var(--c-soft)",
+  orange:    "var(--c-orange)",
+  green:     "var(--c-green)",
+  greenBg:   "var(--c-green-bg)",
+  orangeBg:  "var(--c-orange-bg)",
+  violetBg:  "var(--c-violet-bg)",
 };
 
 /* ── Scroll reveal hook ── */
@@ -37,6 +40,10 @@ function useReveal(threshold = 0.15) {
 
 /* ── Global keyframes injected once ── */
 const KEYFRAMES = `
+  @keyframes slideUpSheet {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+  }
   @keyframes marquee {
     from { transform: translateX(0); }
     to   { transform: translateX(-50%); }
@@ -734,7 +741,7 @@ function HeroSection({ heroVisible, onCTA }: { heroVisible: boolean; onCTA: () =
         </p>
 
         {/* CTAs */}
-        <div style={{
+        <div className="hero-ctas" style={{
           display: "flex", gap: "12px", flexWrap: "wrap", justifyContent: "center",
           opacity: heroVisible ? 1 : 0,
           transform: heroVisible ? "translateY(0)" : "translateY(14px)",
@@ -749,7 +756,7 @@ function HeroSection({ heroVisible, onCTA }: { heroVisible: boolean; onCTA: () =
         </div>
 
         {/* Animated metrics row */}
-        <div style={{
+        <div className="hero-metrics" style={{
           marginTop: "60px",
           display: "flex", gap: "0", justifyContent: "center", flexWrap: "wrap",
           opacity: heroVisible ? 1 : 0,
@@ -886,7 +893,7 @@ function ROICalculator({ onCTA }: { onCTA: () => void }) {
   const roi = ((total - 997) / 997 * 100).toFixed(0);
 
   return (
-    <section style={{ background: T.ink, padding: "96px 40px", position: "relative", overflow: "hidden" }}>
+    <section className="section-pad section-vpad" style={{ background: T.ink, padding: "96px 40px", position: "relative", overflow: "hidden" }}>
       {/* Background glow */}
       <div style={{
         position: "absolute", top: "50%", left: "50%",
@@ -911,7 +918,7 @@ function ROICalculator({ onCTA }: { onCTA: () => void }) {
           </div>
         </Reveal>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "32px", alignItems: "start" }}>
+        <div className="grid-2col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "32px", alignItems: "start" }}>
           {/* Sliders */}
           <Reveal delay={0}>
             <div style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
@@ -973,7 +980,7 @@ function ROICalculator({ onCTA }: { onCTA: () => void }) {
 
           {/* Result card */}
           <Reveal delay={80}>
-            <div style={{
+            <div className="roi-result-card" style={{
               background: "rgba(255,255,255,0.05)",
               border: "1px solid rgba(255,255,255,0.10)",
               borderRadius: "12px", padding: "36px",
@@ -1048,7 +1055,7 @@ function SampleReport({ onCTA }: { onCTA: () => void }) {
   const { ref, visible } = useReveal(0.1);
 
   return (
-    <section style={{ background: T.porcelain, padding: "96px 40px" }}>
+    <section className="section-pad section-vpad" style={{ background: T.porcelain, padding: "96px 40px" }}>
       <div style={{ maxWidth: "900px", margin: "0 auto" }}>
         <Reveal>
           <div style={{ textAlign: "center", marginBottom: "56px" }}>
@@ -1175,6 +1182,412 @@ function SampleReport({ onCTA }: { onCTA: () => void }) {
   );
 }
 
+/* ── Dark mode toggle button ── */
+function DarkToggle({ dark, onToggle }: { dark: boolean; onToggle: () => void }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <button
+      onClick={onToggle}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      title={dark ? "Switch to light mode" : "Switch to dark mode"}
+      style={{
+        width: "34px", height: "34px", borderRadius: "8px",
+        border: `1.5px solid ${hov ? T.washed : T.powder}`,
+        background: hov ? T.violetBg : "transparent",
+        cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+        color: hov ? T.violet : T.ghost,
+        transition: "all 180ms ease",
+      }}
+    >
+      {dark ? (
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+          <circle cx="7.5" cy="7.5" r="3" stroke="currentColor" strokeWidth="1.4"/>
+          <path d="M7.5 1v1.5M7.5 12.5V14M1 7.5h1.5M12.5 7.5H14M3.22 3.22l1.06 1.06M10.72 10.72l1.06 1.06M3.22 11.78l1.06-1.06M10.72 4.28l1.06-1.06" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+        </svg>
+      ) : (
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M12.5 9A6 6 0 015 1.5a6 6 0 100 11A6 6 0 0112.5 9z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
+        </svg>
+      )}
+    </button>
+  );
+}
+
+/* ── Mobile nav ── */
+function MobileNav({ open, onClose, onCTA }: { open: boolean; onClose: () => void; onCTA: () => void }) {
+  useEffect(() => {
+    document.body.style.overflow = open ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [open]);
+
+  const links = [
+    { label: "How it works", id: "process" },
+    { label: "Pricing",      id: "pricing" },
+    { label: "FAQ",          id: "faq" },
+  ];
+
+  return (
+    <div style={{
+      position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+      zIndex: 9999,
+      background: "rgba(255,255,255,0.72)",
+      backdropFilter: "blur(28px) saturate(180%)",
+      WebkitBackdropFilter: "blur(28px) saturate(180%)",
+      display: "flex", flexDirection: "column",
+      transform: open ? "translateX(0)" : "translateX(100%)",
+      transition: "transform 300ms cubic-bezier(0.32, 0.72, 0, 1)",
+      willChange: "transform",
+      borderLeft: "1px solid rgba(255,255,255,0.5)",
+    }}>
+
+      {/* Top bar */}
+      <div style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        padding: "18px 24px",
+        borderBottom: "1px solid rgba(229,237,245,0.6)",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <div style={{ width: "26px", height: "26px", borderRadius: "6px", background: "#533afd", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <svg width="11" height="11" viewBox="0 0 14 14" fill="none"><path d="M7 2L12 11H2L7 2Z" fill="white" fillOpacity="0.9" /></svg>
+          </div>
+          <span style={{ fontSize: "15px", fontWeight: 400, color: "#061b31", letterSpacing: "-0.01em" }}>AuditAI</span>
+        </div>
+        <button
+          onClick={onClose}
+          aria-label="Close menu"
+          style={{
+            width: "32px", height: "32px",
+            background: "rgba(255,255,255,0.5)", border: "1px solid rgba(216,214,223,0.5)",
+            borderRadius: "4px", cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            transition: "background 150ms ease",
+          }}
+          onMouseEnter={e => (e.currentTarget.style.background = "rgba(229,237,245,0.8)")}
+          onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,255,255,0.5)")}
+        >
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M1 1l10 10M11 1L1 11" stroke="#061b31" strokeWidth="1.6" strokeLinecap="round"/>
+          </svg>
+        </button>
+      </div>
+
+      {/* Nav links */}
+      <div style={{ flex: 1, padding: "8px 16px" }}>
+        {links.map(({ label, id }, i) => (
+          <button
+            key={label}
+            onClick={() => { onClose(); setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }), 320); }}
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              width: "100%", padding: "16px 8px",
+              background: "transparent",
+              border: "none",
+              borderBottom: i < links.length - 1 ? "1px solid rgba(229,237,245,0.6)" : "none",
+              cursor: "pointer", textAlign: "left",
+              fontSize: "18px", fontWeight: 400, color: "#061b31",
+              letterSpacing: "-0.009px",
+              transition: "color 150ms ease",
+            }}
+            onMouseEnter={e => (e.currentTarget.style.color = "#533afd")}
+            onMouseLeave={e => (e.currentTarget.style.color = "#061b31")}
+          >
+            {label}
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M6 3l5 5-5 5" stroke="#d8d6df" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+        ))}
+      </div>
+
+      {/* Divider */}
+      <div style={{ height: "1px", background: "rgba(229,237,245,0.6)", margin: "0 24px" }} />
+
+      {/* CTA block */}
+      <div style={{ padding: "24px", background: "rgba(248,250,253,0.6)", margin: "0 16px 16px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.7)" }}>
+        {/* Price line */}
+        <div style={{ display: "flex", alignItems: "baseline", gap: "8px", marginBottom: "12px" }}>
+          <span style={{ fontSize: "32px", fontWeight: 300, color: "#061b31", letterSpacing: "-0.02px", lineHeight: 1 }}>$997</span>
+          <span style={{ fontSize: "14px", color: "#64748d", fontWeight: 400 }}>one-time</span>
+        </div>
+
+        {/* Primary button */}
+        <button
+          onClick={() => { onClose(); setTimeout(onCTA, 320); }}
+          style={{
+            display: "block", width: "100%", padding: "15.5px 24px",
+            background: "#533afd", color: "#ffffff",
+            border: "none", borderRadius: "4px", cursor: "pointer",
+            fontSize: "16px", fontWeight: 400,
+            transition: "opacity 160ms ease, transform 160ms ease",
+          }}
+          onMouseEnter={e => (e.currentTarget.style.opacity = "0.9")}
+          onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
+          onMouseDown={e => (e.currentTarget.style.transform = "scale(0.98)")}
+          onMouseUp={e => (e.currentTarget.style.transform = "scale(1)")}
+        >
+          Get my assessment
+        </button>
+
+        {/* Trust line */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "16px", marginTop: "12px" }}>
+          {["30-day guarantee", "5-day delivery"].map(t => (
+            <span key={t} style={{ fontSize: "11px", color: "#64748d", letterSpacing: "0.03px" }}>✓ {t}</span>
+          ))}
+        </div>
+      </div>
+
+    </div>
+  );
+}
+
+/* ── Sticky bottom CTA ── */
+function StickyCTA({ visible, onCTA }: { visible: boolean; onCTA: () => void }) {
+  return (
+    <div className="sticky-cta" style={{
+      position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 40,
+      padding: "12px 24px",
+      background: T.white,
+      borderTop: `1px solid ${T.powder}`,
+      boxShadow: "0 -4px 24px rgba(0,0,0,0.08)",
+      display: "flex", alignItems: "center", justifyContent: "space-between",
+      gap: "16px", flexWrap: "wrap",
+      transform: visible ? "translateY(0)" : "translateY(100%)",
+      transition: "transform 320ms cubic-bezier(0.23,1,0.32,1)",
+    }}>
+      <div>
+        <div style={{ fontSize: "14px", fontWeight: 600, color: T.ink }}>AI Business Assessment</div>
+        <div style={{ fontSize: "12px", color: T.ghost }}>30-day guarantee · Delivered in 5 days</div>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+        <span style={{ fontSize: "20px", fontWeight: 300, color: T.violet, letterSpacing: "-0.02em" }}>$997</span>
+        <PrimaryButton onClick={onCTA} style={{ padding: "10px 20px", fontSize: "13px" }}>
+          Get started
+        </PrimaryButton>
+      </div>
+    </div>
+  );
+}
+
+/* ── Exit intent overlay ── */
+function ExitIntent({ onCTA, onDismiss }: { onCTA: () => void; onDismiss: () => void }) {
+  return (
+    <div
+      onClick={onDismiss}
+      style={{
+        position: "fixed", inset: 0, zIndex: 300,
+        background: "rgba(6,27,49,0.6)", backdropFilter: "blur(6px)",
+        display: "flex", alignItems: "center", justifyContent: "center", padding: "24px",
+        animation: "fadeUp 0.3s cubic-bezier(0.23,1,0.32,1)",
+      }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          background: T.white, borderRadius: "14px", padding: "44px 40px",
+          maxWidth: "520px", width: "100%",
+          boxShadow: "rgba(0,0,0,0.25) 0px 24px 64px -12px",
+          textAlign: "center",
+          animation: "fadeUp 0.35s cubic-bezier(0.23,1,0.32,1)",
+          position: "relative",
+        }}
+      >
+        <button onClick={onDismiss} style={{
+          position: "absolute", top: "16px", right: "16px",
+          background: T.porcelain, border: "none", borderRadius: "50%",
+          width: "30px", height: "30px", cursor: "pointer",
+          fontSize: "16px", color: T.ghost, display: "flex", alignItems: "center", justifyContent: "center",
+        }}>×</button>
+
+        <div style={{ fontSize: "36px", marginBottom: "16px" }}>👀</div>
+        <h2 style={{ fontSize: "24px", fontWeight: 300, color: T.ink, letterSpacing: "-0.025em", marginBottom: "12px" }}>
+          Before you go…
+        </h2>
+        <p style={{ fontSize: "15px", color: T.slate, lineHeight: 1.65, marginBottom: "8px" }}>
+          Businesses like yours are leaving an average of{" "}
+          <strong style={{ color: T.violet }}>$10,400/year</strong> on the table.
+        </p>
+        <p style={{ fontSize: "14px", color: T.ghost, marginBottom: "28px" }}>
+          See what we'd find in your business — backed by a 30-day guarantee.
+        </p>
+        <PrimaryButton onClick={() => { onDismiss(); onCTA(); }} style={{ width: "100%", textAlign: "center" as const }}>
+          Get my assessment — $997
+        </PrimaryButton>
+        <button onClick={onDismiss} style={{
+          display: "block", width: "100%", marginTop: "12px",
+          background: "none", border: "none", cursor: "pointer",
+          fontSize: "13px", color: T.ghost,
+        }}>
+          No thanks, I'll leave money on the table
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ── Video testimonial ── */
+function VideoTestimonial() {
+  const [playing, setPlaying] = useState(false);
+  const { ref, visible } = useReveal(0.1);
+  return (
+    <section className="section-pad section-vpad" style={{ background: T.white, padding: "80px 40px" }}>
+      <div style={{ maxWidth: "760px", margin: "0 auto" }}>
+        <Reveal>
+          <div style={{ textAlign: "center", marginBottom: "40px" }}>
+            <p style={{ fontSize: "12px", fontWeight: 700, color: T.violet, letterSpacing: "0.8px", marginBottom: "10px" }}>CLIENT STORY</p>
+            <h2 style={{ fontSize: "clamp(26px, 3.5vw, 38px)", fontWeight: 300, color: T.ink, letterSpacing: "-0.025em", margin: 0 }}>
+              "We recovered $14,200 in the first month"
+            </h2>
+          </div>
+        </Reveal>
+
+        <div
+          ref={ref}
+          onClick={() => setPlaying(true)}
+          style={{
+            borderRadius: "12px", overflow: "hidden", cursor: "pointer",
+            position: "relative", aspectRatio: "16/9",
+            background: "#0a0f1e",
+            boxShadow: playing ? "none" : "rgba(83,58,253,0.18) 0px 20px 60px -10px, rgba(0,0,0,0.15) 0px 4px 16px",
+            opacity: visible ? 1 : 0,
+            transform: visible ? "translateY(0) scale(1)" : "translateY(16px) scale(0.98)",
+            transition: "opacity 0.6s cubic-bezier(0.23,1,0.32,1), transform 0.6s cubic-bezier(0.23,1,0.32,1), box-shadow 300ms ease",
+          }}
+        >
+          {!playing ? (
+            <>
+              {/* Thumbnail */}
+              <div style={{
+                position: "absolute", inset: 0,
+                background: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)",
+                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+              }}>
+                {/* Fake waveform */}
+                <div style={{ display: "flex", alignItems: "center", gap: "3px", marginBottom: "32px", opacity: 0.3 }}>
+                  {[18,32,24,44,36,52,28,48,38,56,30,46,22,40,34].map((h, i) => (
+                    <div key={i} style={{ width: "4px", height: `${h}px`, background: T.soft, borderRadius: "2px" }} />
+                  ))}
+                </div>
+
+                {/* Play button */}
+                <div style={{
+                  width: "64px", height: "64px", borderRadius: "50%",
+                  background: "rgba(83,58,253,0.9)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  boxShadow: "0 0 0 8px rgba(83,58,253,0.2), 0 0 0 16px rgba(83,58,253,0.08)",
+                  transition: "transform 200ms ease, box-shadow 200ms ease",
+                  marginBottom: "20px",
+                }}>
+                  <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                    <path d="M7 4l14 7-14 7V4z" fill="white" />
+                  </svg>
+                </div>
+
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: "15px", fontWeight: 600, color: "#e2e8f0", marginBottom: "4px" }}>Sarah Kim — CEO, Acme Inc</div>
+                  <div style={{ fontSize: "12px", color: "#64748b" }}>2:47 · Watch the full story</div>
+                </div>
+              </div>
+
+              {/* Hover overlay */}
+              <div style={{
+                position: "absolute", inset: 0,
+                background: "rgba(83,58,253,0.06)",
+                opacity: 0, transition: "opacity 200ms ease",
+              }}
+                onMouseEnter={e => e.currentTarget.style.opacity = "1"}
+                onMouseLeave={e => e.currentTarget.style.opacity = "0"}
+              />
+            </>
+          ) : (
+            <div style={{
+              position: "absolute", inset: 0,
+              background: "#0a0f1e",
+              display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "16px",
+            }}>
+              <div style={{ fontSize: "14px", color: "#64748b" }}>
+                In a real deployment, a Loom or Vimeo embed would go here.
+              </div>
+              <button onClick={e => { e.stopPropagation(); setPlaying(false); }} style={{
+                background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)",
+                color: "#e2e8f0", borderRadius: "6px", padding: "8px 16px",
+                cursor: "pointer", fontSize: "13px",
+              }}>← Back</button>
+            </div>
+          )}
+        </div>
+
+        {/* Quote */}
+        <Reveal delay={80}>
+          <div style={{ display: "flex", gap: "16px", marginTop: "28px", padding: "0 8px" }}>
+            <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: "linear-gradient(135deg, #533afd, #8087ff)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", fontWeight: 700, color: "#fff", flexShrink: 0 }}>S</div>
+            <div>
+              <p style={{ fontSize: "15px", color: T.ink, lineHeight: 1.7, margin: "0 0 6px", fontStyle: "italic" }}>
+                "The findings call alone changed how I think about the whole business. They found $14,200 in software waste I didn't even know I was paying for."
+              </p>
+              <p style={{ fontSize: "13px", color: T.ghost, margin: 0 }}>Sarah Kim, CEO · Acme Inc</p>
+            </div>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+/* ── Guarantee section ── */
+function GuaranteeSection({ onCTA }: { onCTA: () => void }) {
+  return (
+    <section className="section-pad section-vpad" style={{ background: T.porcelain, padding: "80px 40px" }}>
+      <div style={{ maxWidth: "820px", margin: "0 auto" }}>
+        <Reveal>
+          <div className="grid-guarantee guarantee-card" style={{
+            background: T.white, borderRadius: "14px",
+            padding: "48px 52px",
+            border: `1px solid ${T.powder}`,
+            display: "grid", gridTemplateColumns: "auto 1fr", gap: "40px", alignItems: "center",
+          }}>
+            {/* Shield icon */}
+            <div style={{ textAlign: "center" }}>
+              <div style={{
+                width: "80px", height: "80px", borderRadius: "50%",
+                background: "linear-gradient(135deg, rgba(83,58,253,0.1), rgba(128,135,255,0.1))",
+                border: `2px solid rgba(83,58,253,0.2)`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                margin: "0 auto 12px",
+              }}>
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                  <path d="M16 3L4 8v9c0 6.627 5.15 12.835 12 14 6.85-1.165 12-7.373 12-14V8L16 3z" stroke="var(--c-violet)" strokeWidth="1.8" strokeLinejoin="round"/>
+                  <path d="M10 16l4 4 8-8" stroke="var(--c-violet)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              <div style={{ fontSize: "11px", fontWeight: 700, color: T.violet, letterSpacing: "0.5px" }}>GUARANTEED</div>
+            </div>
+
+            <div>
+              <h2 style={{ fontSize: "clamp(22px, 3vw, 30px)", fontWeight: 300, color: T.ink, letterSpacing: "-0.025em", margin: "0 0 12px" }}>
+                30-day money-back guarantee
+              </h2>
+              <p style={{ fontSize: "15px", color: T.slate, lineHeight: 1.7, margin: "0 0 20px" }}>
+                If we don't identify at least <strong style={{ color: T.ink }}>$997 in actionable savings</strong> within your report, we'll refund every cent. No forms, no hoops — just reply to your delivery email.
+              </p>
+              <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
+                {["No questions asked", "Instant refund", "Applies for 30 days"].map(item => (
+                  <div key={item} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                      <path d="M2 6.5l3 3 6-6" stroke="var(--c-green)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    <span style={{ fontSize: "13px", color: T.slate }}>{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
 /* ══════════════════════════════════════════════
    MAIN PAGE
 ══════════════════════════════════════════════ */
@@ -1182,10 +1595,22 @@ export default function LandingPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [heroVisible, setHeroVisible] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [showStickyCTA, setShowStickyCTA] = useState(false);
+  const [exitIntent, setExitIntent] = useState(false);
+  const exitShown = useRef(false);
+
+  // Landing page is always light
+  useEffect(() => {
+    document.documentElement.classList.remove("dark");
+  }, []);
 
   useEffect(() => {
     setTimeout(() => setHeroVisible(true), 80);
-    const onScroll = () => setScrolled(window.scrollY > 48);
+    const onScroll = () => {
+      setScrolled(window.scrollY > 48);
+      setShowStickyCTA(window.scrollY > window.innerHeight * 0.7);
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
@@ -1195,6 +1620,18 @@ export default function LandingPage() {
     return () => { document.body.style.overflow = ""; };
   }, [modalOpen]);
 
+  // Exit intent — fire once when cursor leaves toward top of viewport
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (e.clientY < 20 && !exitShown.current && !modalOpen) {
+        exitShown.current = true;
+        setExitIntent(true);
+      }
+    };
+    document.addEventListener("mouseleave", handler);
+    return () => document.removeEventListener("mouseleave", handler);
+  }, [modalOpen]);
+
   return (
     <>
       <StyleTag />
@@ -1202,35 +1639,120 @@ export default function LandingPage() {
       {/* ── Nav ── */}
       <nav style={{
         position: "fixed", top: 0, left: 0, right: 0, zIndex: 50,
-        padding: "0 40px",
+        padding: "0 32px",
         height: "60px",
         display: "flex", alignItems: "center", justifyContent: "space-between",
-        background: scrolled ? "rgba(255,255,255,0.92)" : "transparent",
+        background: scrolled ? "color-mix(in srgb, var(--c-white) 92%, transparent)" : "transparent",
         backdropFilter: scrolled ? "blur(12px)" : "none",
         borderBottom: scrolled ? `1px solid ${T.powder}` : "1px solid transparent",
-        transition: "background 280ms ease, border-color 280ms ease, backdrop-filter 280ms ease",
+        transition: "background 280ms ease, border-color 280ms ease",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <div style={{
-            width: "28px", height: "28px", borderRadius: "6px",
-            background: T.violet,
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}>
+          <div style={{ width: "28px", height: "28px", borderRadius: "6px", background: T.violet, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <path d="M7 2L12 11H2L7 2Z" fill="white" fillOpacity="0.9" />
             </svg>
           </div>
-          <span style={{ fontSize: "15px", fontWeight: 600, color: T.ink, letterSpacing: "-0.01em" }}>
-            AuditAI
-          </span>
+          <span style={{ fontSize: "15px", fontWeight: 600, color: T.ink, letterSpacing: "-0.01em" }}>AuditAI</span>
+        </div>
+
+        {/* Desktop nav links */}
+        <div className="nav-desktop-links" style={{ display: "flex", alignItems: "center", gap: "28px", position: "absolute", left: "50%", transform: "translateX(-50%)" }}>
+          {["How it works", "Pricing", "FAQ"].map(l => (
+            <button key={l} onClick={() => document.getElementById(l.toLowerCase().replace(/ /g, "-"))?.scrollIntoView({ behavior: "smooth" })}
+              style={{ background: "none", border: "none", cursor: "pointer", fontSize: "14px", color: T.slate, transition: "color 150ms ease", padding: 0 }}
+              onMouseEnter={e => e.currentTarget.style.color = T.ink as string}
+              onMouseLeave={e => e.currentTarget.style.color = T.slate as string}
+            >{l}</button>
+          ))}
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <OutlineButton onClick={() => setModalOpen(true)}>
-            Get started
-          </OutlineButton>
+          {/* Desktop CTA */}
+          <div className="nav-desktop-cta" style={{ display: "flex" }}>
+            <OutlineButton onClick={() => setModalOpen(true)}>Get started</OutlineButton>
+          </div>
+          {/* Mobile hamburger */}
+          <button
+            onClick={() => setMobileNavOpen(true)}
+            style={{ display: "none", width: "34px", height: "34px", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", color: T.ink }}
+            className="mobile-menu-btn"
+          >
+            <svg width="18" height="14" viewBox="0 0 18 14" fill="none">
+              <path d="M0 1h18M0 7h18M0 13h18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+            </svg>
+          </button>
         </div>
       </nav>
+
+      <style>{`
+        /* ── Responsive overrides ── */
+        @media (max-width: 768px) {
+          /* Nav */
+          .nav-desktop-links { display: none !important; }
+          .nav-desktop-cta   { display: none !important; }
+          .mobile-menu-btn   { display: flex !important; }
+
+          /* Section padding */
+          .section-pad  { padding-left: 20px !important; padding-right: 20px !important; }
+          .section-vpad { padding-top: 64px !important; padding-bottom: 64px !important; }
+
+          /* Grids → single column */
+          .grid-2col  { grid-template-columns: 1fr !important; }
+          .grid-auto  { grid-template-columns: 1fr !important; }
+          .grid-guarantee { grid-template-columns: 1fr !important; gap: 20px !important; }
+
+          /* Guarantee: stack icon + text */
+          .guarantee-icon { text-align: left !important; }
+          .guarantee-card { padding: 28px 22px !important; }
+
+          /* ROI calculator sticky card → normal flow */
+          .roi-result-card { position: static !important; }
+
+          /* Pricing dark card */
+          .pricing-card { padding: 28px 22px !important; }
+
+          /* Hero */
+          .hero-metrics { gap: 0 !important; }
+          .hero-metrics > div { padding: 0 16px !important; }
+          .hero-ctabtn { width: 100% !important; text-align: center !important; }
+          .hero-ctas   { flex-direction: column !important; align-items: stretch !important; }
+
+          /* Footer */
+          .footer-inner { flex-direction: column !important; align-items: flex-start !important; gap: 12px !important; }
+
+          /* Sticky CTA */
+          .sticky-cta { padding: 10px 16px !important; }
+
+          /* Ticker items — smaller gap */
+          .ticker-item { padding: 0 20px !important; }
+
+          /* Process steps min width */
+          .process-grid { grid-template-columns: 1fr 1fr !important; }
+
+          /* Testimonials */
+          .testimonials-grid { grid-template-columns: 1fr !important; }
+
+          /* Sample report header */
+          .report-header { flex-direction: column !important; gap: 12px !important; }
+          .report-header-stats { gap: 12px !important; }
+
+          /* CTA banner */
+          .cta-banner { padding: 36px 24px !important; }
+
+          /* Value cards — 1 col on mobile */
+          .value-grid { grid-template-columns: 1fr !important; }
+
+          /* Pricing grid */
+          .pricing-grid { grid-template-columns: 1fr !important; }
+        }
+
+        @media (max-width: 480px) {
+          .process-grid { grid-template-columns: 1fr !important; }
+          .hero-metrics > div:not(:last-child) { border-right: none !important; border-bottom: 1px solid var(--c-powder); padding-bottom: 16px !important; margin-bottom: 16px !important; }
+          .hero-metrics { flex-direction: column !important; align-items: center !important; }
+        }
+      `}</style>
 
       {/* ── Hero ── */}
       <HeroSection heroVisible={heroVisible} onCTA={() => setModalOpen(true)} />
@@ -1239,7 +1761,7 @@ export default function LandingPage() {
       <LogoTicker />
 
       {/* ── Value ── */}
-      <section style={{ background: T.white, padding: "96px 40px" }}>
+      <section className="section-pad section-vpad" style={{ background: T.white, padding: "96px 40px" }}>
         <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
           <Reveal>
             <div style={{ textAlign: "center", marginBottom: "64px" }}>
@@ -1255,7 +1777,7 @@ export default function LandingPage() {
             </div>
           </Reveal>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "20px" }}>
+          <div className="value-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "20px" }}>
             {[
               { icon: "⚙️", title: "Software & tool audit", body: "We map every SaaS subscription and identify $3,000–$15,000 in annual tool redundancy most companies don't even know they have.", delay: 0 },
               { icon: "📊", title: "Revenue leak detection", body: "Pricing gaps, churn patterns, and missed upsells — quantified with dollar amounts, not vague suggestions.", delay: 60 },
@@ -1274,7 +1796,7 @@ export default function LandingPage() {
       <SampleReport onCTA={() => setModalOpen(true)} />
 
       {/* ── Process ── */}
-      <section id="process" style={{ background: T.porcelain, padding: "96px 40px" }}>
+      <section id="process" className="section-pad section-vpad" style={{ background: T.porcelain, padding: "96px 40px" }}>
         <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
           <Reveal>
             <div style={{ textAlign: "center", marginBottom: "64px" }}>
@@ -1287,7 +1809,7 @@ export default function LandingPage() {
             </div>
           </Reveal>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px" }}>
+          <div className="process-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px" }}>
             {[
               { num: "1", title: "Intake & onboarding", body: "You complete a 20-minute intake form and grant read-only access to your key tools. No calls required.", delay: 0 },
               { num: "2", title: "Deep-dive analysis", body: "A senior consultant spends 8–10 hours inside your business data, not templates.", delay: 80 },
@@ -1304,7 +1826,7 @@ export default function LandingPage() {
       <ROICalculator onCTA={() => setModalOpen(true)} />
 
       {/* ── Pricing ── */}
-      <section style={{ background: T.white, padding: "96px 40px" }}>
+      <section className="section-pad section-vpad" style={{ background: T.white, padding: "96px 40px" }}>
         <div style={{ maxWidth: "900px", margin: "0 auto" }}>
           <Reveal>
             <div style={{ textAlign: "center", marginBottom: "64px" }}>
@@ -1317,7 +1839,7 @@ export default function LandingPage() {
             </div>
           </Reveal>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: "24px", alignItems: "start" }}>
+          <div className="pricing-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: "24px", alignItems: "start" }}>
             {/* Main plan */}
             <Reveal delay={0}>
               <div style={{
@@ -1397,8 +1919,14 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ── Video testimonial ── */}
+      <VideoTestimonial />
+
+      {/* ── Guarantee ── */}
+      <GuaranteeSection onCTA={() => setModalOpen(true)} />
+
       {/* ── Testimonials ── */}
-      <section style={{ background: T.porcelain, padding: "96px 40px" }}>
+      <section className="section-pad section-vpad" style={{ background: T.porcelain, padding: "96px 40px" }}>
         <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
           <Reveal>
             <div style={{ textAlign: "center", marginBottom: "56px" }}>
@@ -1411,7 +1939,7 @@ export default function LandingPage() {
             </div>
           </Reveal>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "20px" }}>
+          <div className="testimonials-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "20px" }}>
             {[
               {
                 quote: "Found $14,200/year in software we forgot we were paying for. Paid for itself 14× in the first month.",
@@ -1459,7 +1987,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── FAQ ── */}
-      <section style={{ background: T.white, padding: "96px 40px" }}>
+      <section className="section-pad section-vpad" style={{ background: T.white, padding: "96px 40px" }}>
         <div style={{ maxWidth: "680px", margin: "0 auto" }}>
           <Reveal>
             <div style={{ textAlign: "center", marginBottom: "56px" }}>
@@ -1484,9 +2012,9 @@ export default function LandingPage() {
       </section>
 
       {/* ── CTA Banner ── */}
-      <section style={{ padding: "80px 40px", background: T.porcelain }}>
+      <section className="section-pad section-vpad" style={{ padding: "80px 40px", background: T.porcelain }}>
         <Reveal>
-          <div style={{
+          <div className="cta-banner" style={{
             maxWidth: "760px", margin: "0 auto",
             background: T.ink,
             borderRadius: "12px",
@@ -1519,7 +2047,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── Footer ── */}
-      <footer style={{
+      <footer className="footer-inner" style={{
         background: T.white,
         padding: "32px 40px",
         borderTop: `1px solid ${T.powder}`,
@@ -1548,6 +2076,15 @@ export default function LandingPage() {
           © 2025 AuditAI. All rights reserved.
         </p>
       </footer>
+
+      {/* ── Mobile nav sheet ── */}
+      <MobileNav open={mobileNavOpen} onClose={() => setMobileNavOpen(false)} onCTA={() => setModalOpen(true)} />
+
+      {/* ── Sticky bottom CTA ── */}
+      <StickyCTA visible={showStickyCTA && !modalOpen} onCTA={() => setModalOpen(true)} />
+
+      {/* ── Exit intent ── */}
+      {exitIntent && <ExitIntent onCTA={() => setModalOpen(true)} onDismiss={() => setExitIntent(false)} />}
 
       {/* ── Payment Modal ── */}
       {modalOpen && <PaymentModal onClose={() => setModalOpen(false)} />}
