@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 
 /* ── Design tokens (CSS custom properties — swapped by dark mode) ── */
 const T = {
@@ -356,28 +357,23 @@ function PaymentModal({ onClose }: { onClose: () => void }) {
     setTimeout(() => { setLoading(false); setStep("success"); }, 1800);
   };
 
-  return (
-    <div
-      onClick={onClose}
-      style={{
-        position: "fixed", inset: 0, zIndex: 100,
-        background: "rgba(6, 27, 49, 0.55)",
-        backdropFilter: "blur(6px)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        padding: "24px 16px",
-        animation: "fadeUp 0.28s cubic-bezier(0.23, 1, 0.32, 1)",
-      }}
-    >
+  return createPortal(
+    <>
+      {/* Scrim */}
+      <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 9000, background: "rgba(6,27,49,0.6)" }} />
+      {/* Card */}
       <div
         onClick={e => e.stopPropagation()}
         style={{
-          background: T.white,
+          position: "fixed", top: "50%", left: "50%",
+          transform: "translate(-50%, -50%)",
+          zIndex: 9001,
+          background: "#ffffff",
           borderRadius: "10px",
-          width: "100%", maxWidth: "480px",
+          width: "calc(100% - 32px)", maxWidth: "480px",
+          maxHeight: "calc(100dvh - 40px)",
           overflowY: "auto",
-          boxShadow: "rgba(0, 0, 0, 0.25) 0px 24px 64px -12px",
-          animation: "fadeUp 0.32s cubic-bezier(0.23, 1, 0.32, 1)",
-          margin: "auto",
+          boxShadow: "rgba(0,0,0,0.3) 0px 24px 64px -12px",
         }}
       >
         {/* Modal header */}
@@ -499,7 +495,8 @@ function PaymentModal({ onClose }: { onClose: () => void }) {
           )}
         </div>
       </div>
-    </div>
+    </>,
+    document.body
   );
 }
 
@@ -1758,7 +1755,7 @@ export default function LandingPage() {
         {/* Desktop nav links */}
         <div className="nav-desktop-links" style={{ display: "flex", alignItems: "center", gap: "28px", position: "absolute", left: "50%", transform: "translateX(-50%)" }}>
           {["How it works", "Pricing", "FAQ"].map(l => (
-            <button key={l} onClick={() => document.getElementById(l.toLowerCase().replace(/ /g, "-"))?.scrollIntoView({ behavior: "smooth" })}
+            <button key={l} onClick={() => { const id = l === "How it works" ? "process" : l.toLowerCase(); document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); }}
               style={{ background: "none", border: "none", cursor: "pointer", fontSize: "14px", color: T.slate, transition: "color 150ms ease", padding: 0 }}
               onMouseEnter={e => e.currentTarget.style.color = T.ink as string}
               onMouseLeave={e => e.currentTarget.style.color = T.slate as string}
@@ -1925,7 +1922,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── Pricing ── */}
-      <section className="section-pad section-vpad" style={{ background: T.white, padding: "96px 40px" }}>
+      <section id="pricing" className="section-pad section-vpad" style={{ background: T.white, padding: "96px 40px" }}>
         <div style={{ maxWidth: "900px", margin: "0 auto" }}>
           <Reveal>
             <div style={{ textAlign: "center", marginBottom: "64px" }}>
@@ -2098,7 +2095,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── FAQ ── */}
-      <section className="section-pad section-vpad" style={{ background: T.white, padding: "96px 40px" }}>
+      <section id="faq" className="section-pad section-vpad" style={{ background: T.white, padding: "96px 40px" }}>
         <div style={{ maxWidth: "680px", margin: "0 auto" }}>
           <Reveal>
             <div style={{ textAlign: "center", marginBottom: "56px" }}>
