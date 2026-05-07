@@ -347,7 +347,7 @@ function MetricBadge({ value, label }: { value: string; label: string }) {
 
 /* ── Payment Modal ── */
 function PaymentModal({ onClose }: { onClose: () => void }) {
-  const [step, setStep] = useState<"form" | "success">("form");
+  const [step, setStep] = useState<"qualify" | "form" | "success">("qualify");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -391,7 +391,7 @@ function PaymentModal({ onClose }: { onClose: () => void }) {
               AI BUSINESS ASSESSMENT
             </div>
             <div style={{ fontSize: "22px", fontWeight: 300, color: T.ink, letterSpacing: "-0.02em" }}>
-              Complete your order
+              {step === "qualify" ? "What's your annual revenue?" : "Complete your order"}
             </div>
           </div>
           <button
@@ -409,7 +409,29 @@ function PaymentModal({ onClose }: { onClose: () => void }) {
         </div>
 
         <div style={{ padding: "24px 28px 28px" }}>
-          {step === "success" ? (
+          {step === "qualify" ? (
+            <div style={{ padding: "8px 0" }}>
+              <p style={{ fontSize: "14px", color: T.slate, marginBottom: "24px", lineHeight: 1.6 }}>
+                Help us understand your business so we can give you an accurate savings estimate.
+              </p>
+              <div style={{ marginBottom: "16px" }}>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: T.ghost, marginBottom: "8px", letterSpacing: "0.3px" }}>ANNUAL REVENUE</label>
+                {[
+                  "Under $500K",
+                  "$500K – $1M",
+                  "$1M – $3M",
+                  "$3M – $10M",
+                  "$10M+",
+                ].map(r => (
+                  <button key={r} onClick={() => setStep("form")} style={{ display: "block", width: "100%", textAlign: "left", padding: "12px 16px", marginBottom: "8px", background: T.porcelain, border: `1.5px solid ${T.powder}`, borderRadius: "6px", cursor: "pointer", fontSize: "14px", color: T.ink, transition: "border-color 160ms ease, background 160ms ease" }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = T.violet; e.currentTarget.style.background = T.violetBg; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = T.powder; e.currentTarget.style.background = T.porcelain; }}
+                  >{r}</button>
+                ))}
+              </div>
+              <p style={{ fontSize: "11px", color: T.ghost, textAlign: "center" }}>All revenue ranges qualify — this helps us tailor your report</p>
+            </div>
+          ) : step === "success" ? (
             <div style={{ textAlign: "center", padding: "20px 0" }}>
               <div style={{ fontSize: "48px", marginBottom: "16px" }}>✓</div>
               <div style={{ fontSize: "20px", fontWeight: 500, color: T.ink, marginBottom: "8px" }}>
@@ -467,7 +489,7 @@ function PaymentModal({ onClose }: { onClose: () => void }) {
                       </svg>
                       Processing…
                     </span>
-                  ) : "Get my assessment — $997"}
+                  ) : "Claim my assessment — $997"}
                 </PrimaryButton>
               </div>
               <p style={{ fontSize: "12px", color: T.ghost, textAlign: "center", marginTop: "12px", lineHeight: 1.5 }}>
@@ -683,9 +705,6 @@ function HeroSection({ heroVisible, onCTA }: { heroVisible: boolean; onCTA: () =
         </div>
 
         {/* Headline — line by line stagger */}
-        {[
-          { text: "Discover", delay: 80, plain: true },
-        ].map(() => null)}
         <h1 style={{
           fontSize: "clamp(44px, 6.5vw, 78px)",
           fontWeight: 300,
@@ -700,7 +719,7 @@ function HeroSection({ heroVisible, onCTA }: { heroVisible: boolean; onCTA: () =
             transform: heroVisible ? "translateY(0)" : "translateY(22px)",
             transition: "opacity 0.65s cubic-bezier(0.23, 1, 0.32, 1) 80ms, transform 0.65s cubic-bezier(0.23, 1, 0.32, 1) 80ms",
           }}>
-            Discover
+            Your business
           </span>
           <span style={{
             display: "block",
@@ -708,16 +727,7 @@ function HeroSection({ heroVisible, onCTA }: { heroVisible: boolean; onCTA: () =
             transform: heroVisible ? "translateY(0)" : "translateY(22px)",
             transition: "opacity 0.65s cubic-bezier(0.23, 1, 0.32, 1) 160ms, transform 0.65s cubic-bezier(0.23, 1, 0.32, 1) 160ms",
           }}>
-            <span style={{
-              background: `linear-gradient(120deg, ${T.violet} 20%, #a78bfa 60%, ${T.soft} 100%)`,
-              backgroundSize: "200% auto",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-              animation: heroVisible ? "shimmer 4s linear infinite" : "none",
-            }}>
-              $10,000+
-            </span>{" "}in hidden
+            has a leak. We'll find it
           </span>
           <span style={{
             display: "block",
@@ -725,7 +735,14 @@ function HeroSection({ heroVisible, onCTA }: { heroVisible: boolean; onCTA: () =
             transform: heroVisible ? "translateY(0)" : "translateY(22px)",
             transition: "opacity 0.65s cubic-bezier(0.23, 1, 0.32, 1) 240ms, transform 0.65s cubic-bezier(0.23, 1, 0.32, 1) 240ms",
           }}>
-            savings
+            in{" "}<span style={{
+              background: `linear-gradient(120deg, ${T.violet} 20%, #a78bfa 60%, ${T.soft} 100%)`,
+              backgroundSize: "200% auto",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+              animation: heroVisible ? "shimmer 4s linear infinite" : "none",
+            }}>5 days.</span>
           </span>
         </h1>
 
@@ -737,8 +754,16 @@ function HeroSection({ heroVisible, onCTA }: { heroVisible: boolean; onCTA: () =
           transform: heroVisible ? "translateY(0)" : "translateY(16px)",
           transition: "opacity 0.65s cubic-bezier(0.23, 1, 0.32, 1) 320ms, transform 0.65s cubic-bezier(0.23, 1, 0.32, 1) 320ms",
         }}>
-          A senior consultant reviews your entire business — tools, pricing, processes, and teams — and delivers a clear roadmap in 5 days.
+          Businesses doing $500K–$10M bleed $8,000–$20,000 a year through duplicate tools, underpriced services, and manual work that should be automated. We audit everything and hand you a clear fix-it plan — guaranteed.
         </p>
+
+        {/* Urgency badge */}
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: "20px", opacity: heroVisible ? 1 : 0, transition: "opacity 0.65s cubic-bezier(0.23, 1, 0.32, 1) 360ms" }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: T.orangeBg, border: `1px solid ${T.orange}`, borderRadius: "20px", padding: "5px 14px" }}>
+            <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: T.orange }} />
+            <span style={{ fontSize: "12px", fontWeight: 500, color: T.orange }}>3 spots remaining this week</span>
+          </div>
+        </div>
 
         {/* CTAs */}
         <div className="hero-ctas" style={{
@@ -748,11 +773,11 @@ function HeroSection({ heroVisible, onCTA }: { heroVisible: boolean; onCTA: () =
           transition: "opacity 0.65s cubic-bezier(0.23, 1, 0.32, 1) 400ms, transform 0.65s cubic-bezier(0.23, 1, 0.32, 1) 400ms",
         }}>
           <PrimaryButton onClick={onCTA}>
-            Get my assessment — $997
+            Find my hidden savings →
           </PrimaryButton>
-          <OutlineButton onClick={() => document.getElementById("process")?.scrollIntoView({ behavior: "smooth" })}>
-            See how it works
-          </OutlineButton>
+          <button onClick={() => document.getElementById("process")?.scrollIntoView({ behavior: "smooth" })} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "15px", color: T.slate, padding: "10px 16px", transition: "color 160ms ease" }} onMouseEnter={e => (e.currentTarget.style.color = T.ink)} onMouseLeave={e => (e.currentTarget.style.color = T.slate)}>
+            See how it works ↓
+          </button>
         </div>
 
         {/* Animated metrics row */}
@@ -763,9 +788,9 @@ function HeroSection({ heroVisible, onCTA }: { heroVisible: boolean; onCTA: () =
           transition: "opacity 0.7s cubic-bezier(0.23, 1, 0.32, 1) 520ms",
         }}>
           {[
-            { value: 214, prefix: "", suffix: "+", label: "Assessments completed", delay: 600 },
+            { value: 214, prefix: "", suffix: "+", label: "Audits delivered", delay: 600 },
             { value: 10400, prefix: "$", suffix: "", label: "Average savings found", delay: 750 },
-            { value: 5, prefix: "", suffix: " days", label: "Delivery guarantee", delay: 900 },
+            { value: 97, prefix: "", suffix: "%", label: "Satisfaction rate", delay: 900 },
           ].map((m, i, arr) => (
             <div key={m.label} style={{
               textAlign: "center",
@@ -795,12 +820,12 @@ function HeroSection({ heroVisible, onCTA }: { heroVisible: boolean; onCTA: () =
           transition: "opacity 0.7s cubic-bezier(0.23, 1, 0.32, 1) 680ms",
           flexWrap: "wrap",
         }}>
-          {["30-day guarantee", "No long-term contracts", "Secured by Stripe"].map((t, i) => (
+          {["30-day money-back guarantee", "Read-only access only", "Secured by Stripe"].map((t, i) => (
             <div key={t} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path d="M2 6.5L4.5 9L10 3.5" stroke={T.green} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M2 6.5L4.5 9L10 3.5" stroke="#81b81a" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              <span style={{ fontSize: "12px", color: T.ghost }}>{t}</span>
+              <span style={{ fontSize: "13px", color: T.slate }}>{t}</span>
             </div>
           ))}
         </div>
@@ -1565,10 +1590,10 @@ function GuaranteeSection({ onCTA }: { onCTA: () => void }) {
 
             <div>
               <h2 style={{ fontSize: "clamp(22px, 3vw, 30px)", fontWeight: 300, color: T.ink, letterSpacing: "-0.025em", margin: "0 0 12px" }}>
-                30-day money-back guarantee
+                If you don't save more than you spent, we'll refund every dollar.
               </h2>
               <p style={{ fontSize: "15px", color: T.slate, lineHeight: 1.7, margin: "0 0 20px" }}>
-                If we don't identify at least <strong style={{ color: T.ink }}>$997 in actionable savings</strong> within your report, we'll refund every cent. No forms, no hoops — just reply to your delivery email.
+                We've done 214 audits. Fewer than 3% of clients have ever asked for a refund. But the guarantee is there because we stand behind the work — not because we need it as a sales tactic. If you don't identify at least <strong style={{ color: T.ink }}>$997 in actionable savings</strong>, just reply to your delivery email.
               </p>
               <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
                 {["No questions asked", "Instant refund", "Applies for 30 days"].map(item => (
@@ -1591,6 +1616,76 @@ function GuaranteeSection({ onCTA }: { onCTA: () => void }) {
 /* ══════════════════════════════════════════════
    MAIN PAGE
 ══════════════════════════════════════════════ */
+const SCHEMA = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://auditai.co/#org",
+      name: "AuditAI",
+      url: "https://auditai.co",
+      description: "AI-powered business assessment delivering $10,000+ in identified savings in 5 days.",
+    },
+    {
+      "@type": "Product",
+      "@id": "https://auditai.co/#product",
+      name: "AI Business Assessment",
+      description: "A senior consultant audits your entire business — tools, pricing, processes, and team — and delivers a prioritized roadmap in 5 business days.",
+      brand: { "@type": "Brand", name: "AuditAI" },
+      offers: {
+        "@type": "Offer",
+        price: "997",
+        priceCurrency: "USD",
+        availability: "https://schema.org/InStock",
+        seller: { "@id": "https://auditai.co/#org" },
+      },
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: "4.9",
+        reviewCount: "214",
+        bestRating: "5",
+      },
+    },
+    {
+      "@type": "FAQPage",
+      mainEntity: [
+        {
+          "@type": "Question",
+          name: "What if I don't find $997 in savings?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "We'll refund you in full — no questions asked. If you don't identify at least $997 in actionable savings within 30 days of delivery, we return every dollar. This has happened in fewer than 3% of audits.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "What access do you need?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Read-only access to your accounting software, project management tool, and a list of your active subscriptions. We never need write access or passwords.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Who actually does the work?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "A senior consultant with 8+ years of operational experience. AI tools assist with data processing — a human makes every recommendation.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "How long does the assessment take?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "We deliver your full report within 5 business days of receiving your intake form and tool access. The process requires about 30 minutes of your time upfront and one 60-minute call.",
+          },
+        },
+      ],
+    },
+  ],
+};
+
 export default function LandingPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -1634,6 +1729,10 @@ export default function LandingPage() {
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(SCHEMA) }}
+      />
       <StyleTag />
 
       {/* ── Nav ── */}
@@ -1760,6 +1859,9 @@ export default function LandingPage() {
       {/* ── Logo ticker ── */}
       <LogoTicker />
 
+      {/* ── ROI Calculator ── */}
+      <ROICalculator onCTA={() => setModalOpen(true)} />
+
       {/* ── Value ── */}
       <section className="section-pad section-vpad" style={{ background: T.white, padding: "96px 40px" }}>
         <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
@@ -1769,22 +1871,22 @@ export default function LandingPage() {
                 WHAT YOU GET
               </p>
               <h2 style={{ fontSize: "clamp(30px, 4vw, 44px)", fontWeight: 300, color: T.ink, letterSpacing: "-0.025em", margin: "0 auto 16px", maxWidth: "560px" }}>
-                Every corner of your business, examined
+                A full operational teardown. Nothing skipped.
               </h2>
               <p style={{ fontSize: "16px", color: T.slate, lineHeight: 1.65, maxWidth: "480px", margin: "0 auto" }}>
-                We go beyond surface-level advice — you get a forensic review with ranked, actionable steps.
+                Not a generic checklist — a forensic review of your actual business with dollar amounts attached to every finding.
               </p>
             </div>
           </Reveal>
 
           <div className="value-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "20px" }}>
             {[
-              { icon: "⚙️", title: "Software & tool audit", body: "We map every SaaS subscription and identify $3,000–$15,000 in annual tool redundancy most companies don't even know they have.", delay: 0 },
-              { icon: "📊", title: "Revenue leak detection", body: "Pricing gaps, churn patterns, and missed upsells — quantified with dollar amounts, not vague suggestions.", delay: 60 },
-              { icon: "🔄", title: "Process efficiency review", body: "Manual workflows that take hours get flagged with automation ROI estimates. You'll see exactly what to fix first.", delay: 120 },
-              { icon: "👥", title: "Team & hiring analysis", body: "Whether you're understaffed, overstaffed, or misaligned — we show you the org chart changes that unlock growth.", delay: 180 },
-              { icon: "🤖", title: "AI readiness score", body: "A scored assessment of where AI can realistically save you 10–20 hours per week across your current stack.", delay: 240 },
-              { icon: "🗺️", title: "90-day action roadmap", body: "Every finding becomes a prioritized task with owner, effort estimate, and expected ROI. Plug it straight into your PM tool.", delay: 300 },
+              { icon: "⚙️", title: "Software & tool audit", body: "We map every subscription you're paying for and find the $3K–$15K in annual overlap most teams don't even know exists.", delay: 0 },
+              { icon: "📊", title: "Pricing gap analysis", body: "We benchmark your rates against market data. Most clients find they're leaving 15–30% on the table without knowing it.", delay: 60 },
+              { icon: "🔄", title: "Process efficiency review", body: "Manual workflows that eat hours get flagged with automation ROI estimates. You'll know exactly what to fix first.", delay: 120 },
+              { icon: "👥", title: "Team & hiring analysis", body: "Understaffed, overstaffed, or misaligned — we show you the org changes that unlock growth without adding headcount.", delay: 180 },
+              { icon: "🤖", title: "AI readiness score", body: "A scored breakdown of exactly where AI can save you 10–20 hours a week — without adding complexity to your stack.", delay: 240 },
+              { icon: "🗺️", title: "90-day action roadmap", body: "Every finding becomes a prioritized task with an owner, effort estimate, and expected ROI. Drops straight into your PM tool.", delay: 300 },
             ].map(c => (
               <ValueCard key={c.title} {...c} />
             ))}
@@ -1804,26 +1906,23 @@ export default function LandingPage() {
                 THE PROCESS
               </p>
               <h2 style={{ fontSize: "clamp(30px, 4vw, 44px)", fontWeight: 300, color: T.ink, letterSpacing: "-0.025em", margin: "0 auto 16px" }}>
-                Five days to total clarity
+                Four steps. Five days. Zero calls required upfront.
               </h2>
             </div>
           </Reveal>
 
           <div className="process-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px" }}>
             {[
-              { num: "1", title: "Intake & onboarding", body: "You complete a 20-minute intake form and grant read-only access to your key tools. No calls required.", delay: 0 },
-              { num: "2", title: "Deep-dive analysis", body: "A senior consultant spends 8–10 hours inside your business data, not templates.", delay: 80 },
-              { num: "3", title: "Findings session", body: "60-minute live walkthrough of everything we found, with open Q&A.", delay: 160 },
-              { num: "4", title: "Report delivery", body: "Full written report with prioritized recommendations, ROI estimates, and supporting data.", delay: 240 },
+              { num: "1", title: "Fill out the intake form", body: "20 minutes. Tell us about your tools, team, and goals. Grant read-only access. We handle the rest.", delay: 0 },
+              { num: "2", title: "We go deep", body: "A senior consultant spends 8–10 hours inside your actual business data — not skimming a template.", delay: 80 },
+              { num: "3", title: "Findings call", body: "We walk you through every finding, answer every question, and explain the priority order.", delay: 160 },
+              { num: "4", title: "You get the report", body: "Full written audit, prioritized roadmap, ROI estimates, and 30 days of follow-up access.", delay: 240 },
             ].map(s => (
               <ProcessStep key={s.num} {...s} />
             ))}
           </div>
         </div>
       </section>
-
-      {/* ── ROI Calculator ── */}
-      <ROICalculator onCTA={() => setModalOpen(true)} />
 
       {/* ── Pricing ── */}
       <section className="section-pad section-vpad" style={{ background: T.white, padding: "96px 40px" }}>
@@ -1834,7 +1933,7 @@ export default function LandingPage() {
                 PRICING
               </p>
               <h2 style={{ fontSize: "clamp(30px, 4vw, 44px)", fontWeight: 300, color: T.ink, letterSpacing: "-0.025em", margin: "0 auto" }}>
-                One clear price. No surprises.
+                One price. No retainer. No surprises.
               </h2>
             </div>
           </Reveal>
@@ -1865,11 +1964,14 @@ export default function LandingPage() {
                     <span style={{ fontSize: "52px", fontWeight: 300, color: T.white, letterSpacing: "-0.04em", lineHeight: 1 }}>$997</span>
                     <span style={{ fontSize: "14px", color: T.washed }}>one time</span>
                   </div>
+                  <p style={{ fontSize: "13px", color: T.soft, marginBottom: "12px", fontStyle: "italic" }}>
+                    A senior consultant charges $400/hr. This is 2.5 hours of their time — for a full business teardown.
+                  </p>
                   <p style={{ fontSize: "14px", color: T.washed, lineHeight: 1.65, marginBottom: "28px" }}>
-                    Delivered in 5 business days. 30-day money-back guarantee if you don't find actionable savings.
+                    Delivered in 5 business days. Full refund if you don't find at least $997 in actionable savings.
                   </p>
                   <PrimaryButton onClick={() => setModalOpen(true)} style={{ width: "100%", textAlign: "center" as const }}>
-                    Get started now
+                    Start my audit
                   </PrimaryButton>
                   <div style={{ marginTop: "28px", display: "flex", flexDirection: "column", gap: "10px" }}>
                     {[
@@ -1877,6 +1979,7 @@ export default function LandingPage() {
                       "60-min findings call",
                       "90-day prioritized roadmap",
                       "AI readiness score",
+                      "30 days follow-up access",
                       "30-day money-back guarantee",
                     ].map(f => (
                       <div key={f} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -1895,10 +1998,10 @@ export default function LandingPage() {
             <Reveal delay={80}>
               <div style={{ padding: "36px 0" }}>
                 <h3 style={{ fontSize: "18px", fontWeight: 500, color: T.ink, marginBottom: "8px", letterSpacing: "-0.015em" }}>
-                  Built for businesses doing $500k–$10M
+                  Built for businesses doing $500K–$10M
                 </h3>
                 <p style={{ fontSize: "14px", color: T.slate, lineHeight: 1.65, marginBottom: "28px" }}>
-                  You've grown past the early hustle but things feel fragmented. We help you find what's bleeding profit before your next hire or investment.
+                  You've grown past the early hustle but things feel fragmented. Stop guessing where the profit is going — we'll show you, with data.
                 </p>
                 <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                   {[
@@ -1934,7 +2037,7 @@ export default function LandingPage() {
                 CLIENT RESULTS
               </p>
               <h2 style={{ fontSize: "clamp(28px, 4vw, 40px)", fontWeight: 300, color: T.ink, letterSpacing: "-0.025em" }}>
-                What founders are saying
+                Founders who stopped guessing.
               </h2>
             </div>
           </Reveal>
@@ -1942,21 +2045,24 @@ export default function LandingPage() {
           <div className="testimonials-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "20px" }}>
             {[
               {
-                quote: "Found $14,200/year in software we forgot we were paying for. Paid for itself 14× in the first month.",
+                quote: "We found $14,200 in software we forgot we were paying for. Paid for itself 14× before the month was out.",
                 name: "Sarah K.",
                 role: "CEO, e-commerce brand",
+                initials: "SK",
                 delay: 0,
               },
               {
-                quote: "The 90-day roadmap alone was worth it. We executed the top 3 items and cut our support workload by 40%.",
+                quote: "The roadmap alone was worth it. We knocked out the top 3 items and cut our support load by 40%.",
                 name: "Marcus D.",
                 role: "Founder, B2B SaaS",
+                initials: "MD",
                 delay: 80,
               },
               {
-                quote: "I was skeptical but the findings call changed how I think about the whole business. Incredibly thorough.",
+                quote: "I almost didn't buy it. The findings call changed how I think about the whole business. Worth every dollar.",
                 name: "Priya M.",
                 role: "COO, professional services",
+                initials: "PM",
                 delay: 160,
               },
             ].map(t => (
@@ -1975,9 +2081,14 @@ export default function LandingPage() {
                   <p style={{ fontSize: "15px", color: T.ink, lineHeight: 1.7, marginBottom: "20px", fontStyle: "italic" }}>
                     "{t.quote}"
                   </p>
-                  <div>
-                    <div style={{ fontSize: "13px", fontWeight: 600, color: T.ink }}>{t.name}</div>
-                    <div style={{ fontSize: "12px", color: T.ghost, marginTop: "2px" }}>{t.role}</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "12px", marginTop: "20px" }}>
+                    <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: T.violetBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <span style={{ fontSize: "11px", fontWeight: 600, color: T.violet }}>{t.initials}</span>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: "13px", fontWeight: 500, color: T.ink }}>{t.name}</div>
+                      <div style={{ fontSize: "12px", color: T.ghost }}>{t.role}</div>
+                    </div>
                   </div>
                 </div>
               </Reveal>
@@ -1993,18 +2104,18 @@ export default function LandingPage() {
             <div style={{ textAlign: "center", marginBottom: "56px" }}>
               <p style={{ fontSize: "12px", fontWeight: 700, color: T.violet, letterSpacing: "0.8px", marginBottom: "12px" }}>FAQ</p>
               <h2 style={{ fontSize: "clamp(28px, 4vw, 40px)", fontWeight: 300, color: T.ink, letterSpacing: "-0.025em" }}>
-                Common questions
+                Everything you want to know before buying.
               </h2>
             </div>
           </Reveal>
 
           {[
             { q: "How long does the assessment take?", a: "We deliver your full report within 5 business days of receiving your intake form and tool access. The process requires about 30 minutes of your time upfront and one 60-minute call.", delay: 0 },
-            { q: "What if I don't find $10,000 in savings?", a: "We offer a full refund if you don't identify at least $997 in actionable savings within 30 days of delivery. This has happened fewer than 3% of the time.", delay: 40 },
-            { q: "What access do you need?", a: "Read-only access to your accounting software, project management tool, and a list of active SaaS subscriptions. We never need write access or passwords.", delay: 80 },
-            { q: "Do I need to prepare anything?", a: "Just complete the intake form (20 minutes) and have a list of your current tools and monthly costs ready. We handle everything else.", delay: 120 },
-            { q: "Is this right for my company size?", a: "We work best with businesses doing $500k–$10M in annual revenue with 5–50 employees. Below that threshold, the ROI is lower. Above it, we offer a custom enterprise package.", delay: 160 },
-            { q: "Who actually does the assessment?", a: "A senior consultant with 8+ years of operational experience, not a junior analyst or AI alone. AI tools assist with data processing; a human makes every recommendation.", delay: 200 },
+            { q: "What if I don't find $997 in savings?", a: "We'll refund you in full — no questions asked. If you don't identify at least $997 in actionable savings within 30 days of delivery, we return every dollar. This has happened in fewer than 3% of audits.", delay: 40 },
+            { q: "What access do you need?", a: "Read-only access to your accounting software, project management tool, and a list of your active subscriptions. We never need write access or passwords.", delay: 80 },
+            { q: "How is this different from hiring a consultant?", a: "A typical consultant charges $400–$800/hr and takes weeks to ramp up. We deliver a structured, data-driven report in 5 days at a fixed price — with a money-back guarantee.", delay: 120 },
+            { q: "Is this right for my company size?", a: "We work best with businesses doing $500K–$10M in revenue with 5–50 employees. Below that, ROI is lower. Above it, we offer a custom enterprise package.", delay: 160 },
+            { q: "Who actually does the work?", a: "A senior consultant with 8+ years of operational experience. AI tools assist with data processing — a human makes every recommendation.", delay: 200 },
           ].map(f => (
             <FAQItem key={f.q} {...f} />
           ))}
@@ -2030,16 +2141,16 @@ export default function LandingPage() {
             }} />
             <div style={{ position: "relative" }}>
               <h2 style={{ fontSize: "clamp(26px, 4vw, 40px)", fontWeight: 300, color: T.white, letterSpacing: "-0.025em", margin: "0 0 16px" }}>
-                Ready to stop leaving money on the table?
+                Stop leaving money on the table.
               </h2>
-              <p style={{ fontSize: "16px", color: T.washed, lineHeight: 1.65, marginBottom: "32px", maxWidth: "480px", margin: "0 auto 32px" }}>
-                Join 214+ founders who found an average of $10,400 in savings. Delivered in 5 days.
+              <p style={{ fontSize: "16px", color: T.washed, lineHeight: 1.65, marginBottom: "32px", maxWidth: "520px", margin: "0 auto 32px" }}>
+                You built this business to grow — not to bleed profit through tools you forgot about and processes you never had time to fix. Let us find it for you.
               </p>
               <PrimaryButton onClick={() => setModalOpen(true)}>
-                Get my assessment — $997
+                Show me what I&apos;m losing
               </PrimaryButton>
               <p style={{ fontSize: "13px", color: T.ghost, marginTop: "14px" }}>
-                30-day money-back guarantee · Delivered in 5 business days
+                30-day guarantee · 5-day delivery · Secured by Stripe
               </p>
             </div>
           </div>

@@ -1,21 +1,36 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import PageTransition from "../components/PageTransition";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const SITE_URL = "https://auditai.co";
 
 export const metadata: Metadata = {
-  title: "AuditAI — AI Business Assessment",
-  description: "Discover $10,000+ in hidden savings. A senior consultant reviews your entire business in 5 days.",
+  title: "AuditAI — Find the $10K+ Your Business Is Leaking in 5 Days",
+  description:
+    "Businesses doing $500K–$10M bleed $8,000–$20,000/year through duplicate tools, underpriced services, and manual work. We audit everything and hand you a fix-it plan in 5 days. 30-day guarantee.",
+  metadataBase: new URL(SITE_URL),
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "AuditAI — Find the $10K+ Your Business Is Leaking in 5 Days",
+    description:
+      "A senior consultant audits your entire business — tools, pricing, processes, and team — and delivers a prioritized roadmap in 5 days. Average savings found: $10,400.",
+    url: SITE_URL,
+    siteName: "AuditAI",
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AuditAI — Find the $10K+ Your Business Is Leaking in 5 Days",
+    description:
+      "214+ businesses audited. $10,400 average savings found. Delivered in 5 days with a 30-day money-back guarantee.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({
@@ -24,11 +39,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">
+    <html lang="en">
+      <body>
         <PageTransition>{children}</PageTransition>
       </body>
     </html>
